@@ -1,5 +1,6 @@
 from random import *
 
+
 class BubbleSort:
     def __init__(self, data):
         self.sort(data)
