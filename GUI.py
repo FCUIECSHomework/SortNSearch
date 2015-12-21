@@ -1,10 +1,10 @@
 from tkinter import *
 from tkinter.scrolledtext import ScrolledText
-import tkinter.messagebox as messageBox
 from tkinter.filedialog import *
 import os
 import json
 import csv
+from search import *
 
 
 class MainGUI(Frame):
@@ -13,29 +13,48 @@ class MainGUI(Frame):
         self.grid()
         self.originalText = []
         self.sortText = []
-        self.createWidgets()
+        self.createWidgets(master)
 
-    def createWidgets(self):
+    def createWidgets(self, master):
         self.searchBox = Entry(self, width=100)
         self.searchBox.grid(row=0, column=0, columnspan=4)
-        self.searchButton = Button(self, text="搜尋")
+        self.searchButton = Button(self, text="搜尋", command=lambda: self.searchItem(self.searchBox.get()))
         self.searchButton.grid(row=0, column=4)
 
         self.originalTextList = Listbox(self, height=40, width=50)
-        self.originalTextList.grid(row=1, column=0, columnspan=2, rowspan=5)
+        self.originalTextList.grid(row=1, column=0, columnspan=2, rowspan=7)
         self.sortTextList = Listbox(self, height=40, width=50)
-        self.sortTextList.grid(row=1, column=3, columnspan=2, rowspan=5)
+        self.sortTextList.grid(row=1, column=3, columnspan=2, rowspan=7)
 
-        self.loadDataButton = Button(self, text="讀取資料")
+        self.loadDataButton = Button(self, text="讀取資料", command=lambda: self.loadData(askopenfilename(title="開啟檔案",
+                                                                                                      filetypes=[(
+                                                                                                                 'Json檔案',
+                                                                                                                 ".json"),
+                                                                                                                 (
+                                                                                                                 'Csv檔案',
+                                                                                                                 ".csv"),
+                                                                                                                 (
+                                                                                                                 '純文字檔案',
+                                                                                                                 ".txt"),
+                                                                                                                 (
+                                                                                                                 '所有檔案',
+                                                                                                                 '.*')])))
         self.loadDataButton.grid(row=1, column=2)
-        self.saveDataButton = Button(self, text="儲存資料")
+        self.saveDataButton = Button(self, text="儲存資料", command=lambda: self.saveData(
+            asksaveasfilename(title="另存新檔", filetypes=[('Json檔案', ".json"), ('所有檔案', '.*')])))
         self.saveDataButton.grid(row=2, column=2)
-        self.addData = Button(self, text="新增資料")
-        self.addData.grid(row=3, column=2)
-        self.editData = Button(self, text="修改資料")
-        self.editData.grid(row=4, column=2)
-        self.removeData = Button(self, text="刪除資料")
-        self.removeData.grid(row=5, column=2)
+        self.sortData = Button(self, text="排序資料", command=lambda: self.sortItem())
+        self.sortData.grid(row=3, column=2)
+        self.addData = Button(self, text="新增資料", command=lambda: self.addDataView())
+        self.addData.grid(row=4, column=2)
+        self.editData = Button(self, text="修改資料",
+                               command=lambda: self.editDataView(self.originalTextList.curselection()[0]))
+        self.editData.grid(row=5, column=2)
+        self.removeData = Button(self, text="刪除資料",
+                                 command=lambda: self.removeDataView(self.originalTextList.curselection()[0]))
+        self.removeData.grid(row=6, column=2)
+        self.exitButton = Button(self, text="離開程式", command=lambda: master.destroy())
+        self.exitButton.grid(row=7, column=2)
 
     def loadData(self, filename=None):
         if filename is None:
@@ -44,7 +63,7 @@ class MainGUI(Frame):
             ext = os.path.splitext(filename)[-1]
             if ext == '.json':
                 with open(filename) as jsonFile:
-                    self.originalText = json.load(jsonFile)
+                    self.originalText = json.load(jsonFile)['data']
                     jsonFile.close()
             elif ext == '.csv':
                 with open(filename) as csvFile:
@@ -54,16 +73,22 @@ class MainGUI(Frame):
                 with open(filename) as File:
                     self.originalText = File.readlines()
                     File.close()
+            self.listReload()
 
-    def saveData(self, filename=None, mode=None):
+    def saveData(self, filename=None):
+        mode = False
+        result = messageBox.askquestion("儲存檔案", "你要存哪一邊到檔案呢？\n（Yes=左欄、No=右欄）")
+        if result == "yes":
+            mode = True
+
         if filename is None or mode is None:
             pass
         else:
             with open(filename, 'w') as file:
                 if mode:
-                    json.dump(self.originalText, file, sort_keys=False, indent=4)
+                    json.dump({"data": self.originalText}, file, sort_keys=False, indent=4)
                 else:
-                    json.dump(self.sortText, file, sort_keys=False, indent=4)
+                    json.dump({"data": self.sortText}, file, sort_keys=False, indent=4)
                 file.close()
 
     def addDataView(self):
@@ -75,13 +100,15 @@ class MainGUI(Frame):
         window.info.grid(row=0, column=0, columnspan=2)
         window.enter = Entry(window, width=40)
         window.enter.grid(row=1, column=0, columnspan=2)
-        window.ok = Button(window, text="確定", command=lambda x: window.enter.get() is not None if self.addData(window, window.enter.get()) else window.destroy)
+        window.ok = Button(window, text="確定", command=lambda: window.enter.get() is not None if MainGUI.addData(self,window,
+                                                                                                               window.enter.get()) else window.destroy)
         window.ok.grid(row=2, column=0)
-        window.cancel = Button(window, text="取消", command=window.destroy())
+        window.cancel = Button(window, text="取消", command=lambda: window.destroy())
         window.cancel.grid(row=2, column=1)
 
     def addData(self, window, Data):
         self.originalText.append(Data)
+        self.sortText = []
         self.listReload()
         window.destroy()
 
@@ -94,14 +121,16 @@ class MainGUI(Frame):
         window.info.grid(row=0, column=0, columnspan=2)
         window.enter = Entry(window, width=40, text=self.originalText[index])
         window.enter.grid(row=1, column=0, columnspan=2)
-        window.ok = Button(window, text="確定", command=lambda:self.editData(window, index, window.enter.get()))
+        window.ok = Button(window, text="確定", command=lambda: MainGUI.editData(self, window=window , index=index, newData=window.enter.get()))
         window.ok.grid(row=2, column=0)
-        window.cancel = Button(window, text="取消", command=window.destroy())
+        window.cancel = Button(window, text="取消", command=lambda: window.destroy())
         window.cancel.grid(row=2, column=1)
 
     def editData(self, window, index, newData):
         self.originalText[index] = newData
-        window.destory()
+        self.sortText = []
+        self.listReload()
+        window.destroy()
 
     def removeDataView(self, index):
         window = Toplevel()
@@ -112,21 +141,37 @@ class MainGUI(Frame):
         window.info.grid(row=0, column=0, columnspan=2)
         window.data = Label(window, text=self.originalText[index])
         window.data.grid(row=1, column=0, columnspan=2)
-        window.ok = Button(window, text="確定", command=lambda:self.removeData(window, index))
+        window.ok = Button(window, text="確定", command=lambda: MainGUI.removeData(self, window=window, index=index))
         window.ok.grid(row=2, column=0)
-        window.cancel = Button(window, text="取消", command=window.destroy())
+        window.cancel = Button(window, text="取消", command=lambda: window.destroy())
         window.cancel.grid(row=2, column=1)
 
     def removeData(self, window, index):
         self.originalText.pop(index)
+        self.sortText = []
+        self.listReload()
         window.destroy()
-        pass
 
     def listReload(self):
         self.originalTextList.delete(0, END)
         self.sortTextList.delete(0, END)
         for i in self.originalText:
-            self.originalTextList.insert(i)
+            self.originalTextList.insert(END, i)
+        if len(self.sortText) > 0:
+            for i in self.sortText:
+                self.sortTextList.insert(END, i)
 
-    def searchBox(self):
-        pass
+    def searchItem(self, data):
+        result = messageBox.askquestion("選擇搜尋法？", "要用線性搜尋法搜尋嗎？\n(Yes=線性搜尋法、No=排序後二分搜尋法)")
+        if result == "yes":
+            LinearSearch(self.originalText, data)
+        else:
+            BinarySearch(self.originalText, data)
+
+    def sortItem(self):
+        result = messageBox.askquestion("選擇排序法", "要用泡沫搜尋法搜尋嗎？\n(Yes=泡沫搜尋法、No=快速排序法)")
+        if result == "yes":
+            self.sortText = BubbleSort.sort(self, list(self.originalText))
+        else:
+            self.sortText = QuickSort.sort(self, list(self.originalText), 0, len(self.originalText)-1)
+        self.listReload()

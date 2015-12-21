@@ -6,37 +6,37 @@ class LinearSearch:
     def __init__(self, data, target):
         newData = list(data)
         index = self.search(newData, target)
-        if not index:
-            messageBox.showinfo("Target: " + str(target) + " Not Found!")
+        if index is None:
+            messageBox.showinfo("查無資料", "Target: " + str(target) + " Not Found!")
         else:
-            messageBox.showinfo("Target: " + str(target) + " Found at " + str(index) + " in data!")
+            messageBox.showinfo("找到資料", "Target: " + str(target) + " Found at " + str(index) + " in data!")
 
     def search(self, data, target):
         if len(data) < 1:
-            return False
+            return None
         else:
             data.append(target)
-            for i in range(0, len(data)-1):
+            for i in range(0, len(data) - 1):
                 if data[i] == target:
                     data.pop()
                     return i
             else:
                 data.pop()
-                return False
+                return None
 
 
 class BinarySearch:
     def __init__(self, data, target):
         newData = list(data)
         index = self.search(newData, target)
-        if not index:
-            messageBox.showinfo("Target: " + str(target) + " Not Found!")
+        if index is None:
+            messageBox.showinfo("查無資料", "Target: " + str(target) + " Not Found!")
         else:
-            messageBox.showinfo("Target: " + str(target) + " Found at " + str(index) + " in data! (After sort)")
+            messageBox.showinfo("找到資料", "Target: " + str(target) + " Found at " + str(index) + " in data! (After sort)")
 
     def search(self, data, target):
         if len(data) < 1:
-            return False
+            return None
         else:
             QuickSort(data)
             low = 0
@@ -50,4 +50,4 @@ class BinarySearch:
                 else:
                     low = index + 1
             else:
-                return False
+                return None

@@ -3,7 +3,7 @@ from random import *
 
 class BubbleSort:
     def __init__(self, data):
-        self.sort(data)
+        self.sort(list(data))
 
     def sort(self, data):
         if len(data) <= 1:
@@ -13,13 +13,14 @@ class BubbleSort:
                 for j in range(0, len(data)-1-i):
                     if data[j] > data[j+1]:
                         data[j], data[j+1] = data[j+1], data[j]
+        return data
 
 
 class QuickSort:
     def __init__(self, data):
-        self.sort(data, 0, len(data)-1)
+        self.sort(list(data), 0, len(data)-1)
 
-    def sort(self, data, left, right, stringSort=False):
+    def sort(self, data, left, right):
         if len(data) <= 1:
             return
         elif right <= left:
@@ -34,5 +35,6 @@ class QuickSort:
                     data[i], data[swapIndex] = data[swapIndex], data[i]
                     swapIndex += 1
             data[swapIndex], data[right] = data[right], data[swapIndex]
-            self.sort(data, left, swapIndex-1)
-            self.sort(data, swapIndex+1, right)
+            QuickSort.sort(self, data, left, swapIndex-1)
+            QuickSort.sort(self, data, swapIndex+1, right)
+        return data
