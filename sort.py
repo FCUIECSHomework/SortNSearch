@@ -19,7 +19,7 @@ class QuickSort:
     def __init__(self, data):
         self.sort(data, 0, len(data)-1)
 
-    def sort(self, data, left, right):
+    def sort(self, data, left, right, stringSort=False):
         if len(data) <= 1:
             return
         elif right <= left:

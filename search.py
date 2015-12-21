@@ -1,4 +1,5 @@
 from sort import *
+import tkinter.messagebox as messageBox
 
 
 class LinearSearch:
@@ -6,9 +7,9 @@ class LinearSearch:
         newData = list(data)
         index = self.search(newData, target)
         if not index:
-            print("Target: " + str(target) + " Not Found!")
+            messageBox.showinfo("Target: " + str(target) + " Not Found!")
         else:
-            print("Target: " + str(target) + " Found at " + str(index) + " in data!")
+            messageBox.showinfo("Target: " + str(target) + " Found at " + str(index) + " in data!")
 
     def search(self, data, target):
         if len(data) < 1:
@@ -29,9 +30,9 @@ class BinarySearch:
         newData = list(data)
         index = self.search(newData, target)
         if not index:
-            print("Target: " + str(target) + " Not Found!")
+            messageBox.showinfo("Target: " + str(target) + " Not Found!")
         else:
-            print("Target: " + str(target) + " Found at " + str(index) + " in data!")
+            messageBox.showinfo("Target: " + str(target) + " Found at " + str(index) + " in data! (After sort)")
 
     def search(self, data, target):
         if len(data) < 1:
