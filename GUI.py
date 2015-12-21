@@ -178,7 +178,7 @@ class MainGUI(Frame):
             runtime = self.current_milli_time()
             BinarySearch(self.originalText, data)
             runtime = self.current_milli_time() - runtime
-        messageBox.showinfo("花費時間", "本次搜尋花費"+str(runtime)+"ms.")
+        messageBox.showinfo("花費時間", "本次搜尋花費約"+str(runtime)+"ms.")
 
     def sortItem(self):
         result = messageBox.askquestion("選擇排序法", "要用泡沫搜尋法搜尋嗎？\n(Yes=泡沫搜尋法、No=快速排序法)")
@@ -192,4 +192,4 @@ class MainGUI(Frame):
             self.sortText = QuickSort.sort(self, list(self.originalText), 0, len(self.originalText)-1)
             runtime = self.current_milli_time() - runtime
         self.listReload()
-        messageBox.showinfo("花費時間", "本次排序花費"+str(runtime)+"ms.")
+        messageBox.showinfo("花費時間", "本次排序花費約"+str(runtime)+"ms.")
