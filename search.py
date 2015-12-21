@@ -38,14 +38,14 @@ class BinarySearch:
         if len(data) < 1:
             return None
         else:
-            QuickSort(data)
+            newData = QuickSort.sort(self, list(data), 0, len(data)-1)
             low = 0
-            high = len(data) - 1
+            high = len(newData) - 1
             while low <= high:
                 index = int((low + high) / 2)
-                if data[index] == target:
+                if newData[index] == target:
                     return index
-                elif data[index] > target:
+                elif newData[index] > target:
                     high = index - 1
                 else:
                     low = index + 1

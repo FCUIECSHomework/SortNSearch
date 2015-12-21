@@ -4,27 +4,33 @@ from tkinter.filedialog import *
 import os
 import json
 import csv
+import time
 from search import *
 
 
 class MainGUI(Frame):
     def __init__(self, master=None):
         Frame.__init__(self, master)
+        master.wm_title("Sort & Search")
         self.grid()
         self.originalText = []
         self.sortText = []
         self.createWidgets(master)
+        self.current_milli_time = lambda: int(round(time.time() * 1000))
 
     def createWidgets(self, master):
-        self.searchBox = Entry(self, width=100)
+        self.searchBox = Entry(self, width=90)
         self.searchBox.grid(row=0, column=0, columnspan=4)
+        self.searchBox.config(font="Consolas")
         self.searchButton = Button(self, text="搜尋", command=lambda: self.searchItem(self.searchBox.get()))
         self.searchButton.grid(row=0, column=4)
 
-        self.originalTextList = Listbox(self, height=40, width=50)
+        self.originalTextList = Listbox(self, height=40, width=40)
         self.originalTextList.grid(row=1, column=0, columnspan=2, rowspan=7)
-        self.sortTextList = Listbox(self, height=40, width=50)
+        self.originalTextList.config(font="Consolas")
+        self.sortTextList = Listbox(self, height=40, width=40)
         self.sortTextList.grid(row=1, column=3, columnspan=2, rowspan=7)
+        self.sortTextList.config(font="Consolas")
 
         self.loadDataButton = Button(self, text="讀取資料", command=lambda: self.loadData(askopenfilename(title="開啟檔案",
                                                                                                       filetypes=[(
@@ -39,22 +45,22 @@ class MainGUI(Frame):
                                                                                                                  (
                                                                                                                  '所有檔案',
                                                                                                                  '.*')])))
-        self.loadDataButton.grid(row=1, column=2)
+        self.loadDataButton.grid(row=1, column=2, sticky=NSEW)
         self.saveDataButton = Button(self, text="儲存資料", command=lambda: self.saveData(
             asksaveasfilename(title="另存新檔", filetypes=[('Json檔案', ".json"), ('所有檔案', '.*')])))
-        self.saveDataButton.grid(row=2, column=2)
+        self.saveDataButton.grid(row=2, column=2, sticky=NSEW)
         self.sortData = Button(self, text="排序資料", command=lambda: self.sortItem())
-        self.sortData.grid(row=3, column=2)
+        self.sortData.grid(row=3, column=2, sticky=NSEW)
         self.addData = Button(self, text="新增資料", command=lambda: self.addDataView())
-        self.addData.grid(row=4, column=2)
+        self.addData.grid(row=4, column=2, sticky=NSEW)
         self.editData = Button(self, text="修改資料",
                                command=lambda: self.editDataView(self.originalTextList.curselection()[0]))
-        self.editData.grid(row=5, column=2)
+        self.editData.grid(row=5, column=2, sticky=NSEW)
         self.removeData = Button(self, text="刪除資料",
                                  command=lambda: self.removeDataView(self.originalTextList.curselection()[0]))
-        self.removeData.grid(row=6, column=2)
+        self.removeData.grid(row=6, column=2, sticky=NSEW)
         self.exitButton = Button(self, text="離開程式", command=lambda: master.destroy())
-        self.exitButton.grid(row=7, column=2)
+        self.exitButton.grid(row=7, column=2, sticky=NSEW)
 
     def loadData(self, filename=None):
         if filename is None:
@@ -163,15 +169,27 @@ class MainGUI(Frame):
 
     def searchItem(self, data):
         result = messageBox.askquestion("選擇搜尋法？", "要用線性搜尋法搜尋嗎？\n(Yes=線性搜尋法、No=排序後二分搜尋法)")
+        runtime = 0
         if result == "yes":
+            runtime = self.current_milli_time()
             LinearSearch(self.originalText, data)
+            runtime = self.current_milli_time() - runtime
         else:
+            runtime = self.current_milli_time()
             BinarySearch(self.originalText, data)
+            runtime = self.current_milli_time() - runtime
+        messageBox.showinfo("花費時間", "本次搜尋花費"+str(runtime)+"ms.")
 
     def sortItem(self):
         result = messageBox.askquestion("選擇排序法", "要用泡沫搜尋法搜尋嗎？\n(Yes=泡沫搜尋法、No=快速排序法)")
+        runtime = 0
         if result == "yes":
+            runtime = self.current_milli_time()
             self.sortText = BubbleSort.sort(self, list(self.originalText))
+            runtime = self.current_milli_time() - runtime
         else:
+            runtime = self.current_milli_time()
             self.sortText = QuickSort.sort(self, list(self.originalText), 0, len(self.originalText)-1)
+            runtime = self.current_milli_time() - runtime
         self.listReload()
+        messageBox.showinfo("花費時間", "本次排序花費"+str(runtime)+"ms.")
